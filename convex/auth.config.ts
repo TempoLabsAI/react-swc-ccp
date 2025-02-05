@@ -1,7 +1,7 @@
 export default {
     providers: [
       {
-        domain: "https://nearby-heron-18.clerk.accounts.dev/",
+        domain: process.env.CLERK_SIGNING_KEY,
         applicationID: "convex",
       },
     ]
