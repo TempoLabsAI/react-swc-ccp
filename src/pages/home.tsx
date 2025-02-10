@@ -11,14 +11,16 @@ function App() {
   const { user, isLoaded: isUserLoaded } = useUser();
   const storeUser = useMutation(api.users.store);
   const getProCheckoutUrl = useAction(api.subscriptions.getProOnboardingCheckoutUrl);
+  const storePlans = useAction(api.subscriptions.storePlans);
   const subscriptionStatus = useQuery(api.subscriptions.getUserSubscriptionStatus);
   const navigate = useNavigate();
 
   useEffect(() => {
     if (user) {
       storeUser();
+      storePlans();
     }
-  }, [user, storeUser]);
+  }, [user, storeUser, storePlans]);
 
 
   const handleCheckout = async (interval: "month" | "year") => {

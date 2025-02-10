@@ -1,28 +1,5 @@
 import { defineSchema, defineTable } from "convex/server";
-import { Infer, v } from "convex/values";
-
-export const INTERVALS = {
-    MONTH: "month",
-    YEAR: "year",
-} as const;
-
-export const intervalValidator = v.union(
-    v.literal(INTERVALS.MONTH),
-    v.literal(INTERVALS.YEAR),
-);
-
-export type Interval = Infer<typeof intervalValidator>;
-
-// Define a price object structure that matches your data
-const priceValidator = v.object({
-    amount: v.number(),
-    polarId: v.string(),
-});
-
-// Define a prices object structure for a specific interval
-const intervalPricesValidator = v.object({
-    usd: priceValidator,
-});
+import { v } from "convex/values";
 
 export default defineSchema({
     users: defineTable({
@@ -36,10 +13,7 @@ export default defineSchema({
         name: v.string(),
         description: v.string(),
         polarProductId: v.string(),
-        prices: v.object({
-            month: v.optional(intervalPricesValidator),
-            year: v.optional(intervalPricesValidator),
-        }),
+        prices: v.any(),
     })
         .index("key", ["key"])
         .index("polarProductId", ["polarProductId"]),

@@ -4,6 +4,7 @@ import { api, internal } from "./_generated/api";
 import {
     action,
     httpAction,
+    internalMutation,
     internalQuery,
     mutation,
     query
@@ -43,62 +44,165 @@ const createCheckout = async ({
     return result;
 };
 
+export const getPlans = internalQuery({
+    args: {},
+    handler: async (ctx, args) => {
+        const info = await ctx.db
+            .query("plans")
+            .first()
+        return info;
+    },
+});
+
 export const getPlanByKey = internalQuery({
     args: {
         key: schema.tables.plans.validator.fields.key,
     },
     handler: async (ctx, args) => {
-        return ctx.db
+        return await ctx.db
             .query("plans")
             .withIndex("key", (q) => q.eq("key", args.key))
             .unique();
     },
 });
 
-export const getOnboardingCheckoutUrl = action({
-    handler: async (ctx) => {
+// Add these new mutations to handle plan creation and updates
+export const createPlan = internalMutation({
+    args: {
+        description: v.string(),
+        key: v.string(),
+        name: v.string(),
+        polarProductId: v.string(),
+        prices: v.object({
+            month: v.object({
+                usd: v.optional(v.union(
+                    v.object({
+                        amount: v.number(),
+                        polarId: v.string()
+                    }),
+                    v.null()
+                ))
+            }),
+            year: v.object({
+                usd: v.optional(v.union(
+                    v.object({
+                        amount: v.number(),
+                        polarId: v.string()
+                    }),
+                    v.null()
+                ))
+            })
+        })
+    },
+    handler: async (ctx, args) => {
+        return await ctx.db.insert("plans", args);
+    },
+});
+
+export const updatePlan = internalMutation({
+    args: {
+        id: v.id("plans"),
+        description: v.string(),
+        name: v.string(),
+        polarProductId: v.string(),
+        prices: v.object({
+            month: v.object({
+                usd: v.optional(v.union(
+                    v.object({
+                        amount: v.number(),
+                        polarId: v.string()
+                    }),
+                    v.null()
+                ))
+            }),
+            year: v.object({
+                usd: v.optional(v.union(
+                    v.object({
+                        amount: v.number(),
+                        polarId: v.string()
+                    }),
+                    v.null()
+                ))
+            })
+        })
+    },
+    handler: async (ctx, args) => {
+        const { id, ...updates } = args;
+        return await ctx.db.patch(id, updates);
+    },
+});
+
+export const storePlans = action({
+    args: {},
+    handler: async (ctx, args) => {
         const identity = await ctx.auth.getUserIdentity();
         if (!identity) {
             throw new Error("Not authenticated");
         }
 
-        const user = await ctx.runQuery(api.users.getUserByToken, {
-            tokenIdentifier: identity.subject
+        const polar = new Polar({
+            server: "sandbox",
+            accessToken: process.env.POLAR_ACCESS_TOKEN,
         });
 
-        if (!user) {
-            throw new Error("User not found");
-        }
-
-        const product = await ctx.runQuery(internal.subscriptions.getPlanByKey, {
-            key: "free",
+        const { result } = await polar.products.list({
+            organizationId: process.env.POLAR_ORGANIZATION_ID
         });
 
-        const price = product?.prices.month?.usd;
+        // console.log("Products:", result);
+        // Process each product and store in plans table
+        for (const product of result.items) {
+            // Find the prices once to avoid multiple lookups
+            const monthlyPrice: any = product.prices.find((p: any) => p.recurringInterval === 'month' && p.priceCurrency === 'usd');
+            const yearlyPrice: any = product.prices.find((p: any) => p.recurringInterval === 'year' && p.priceCurrency === 'usd');
 
-        if (!price) {
-            throw new Error("Price not found");
+            // Build the prices object with empty objects as defaults
+            const prices = {
+                month: {
+                    usd: monthlyPrice ? {
+                        amount: monthlyPrice.priceAmount,
+                        polarId: monthlyPrice.id
+                    } : {}
+                },
+                year: {
+                    usd: yearlyPrice ? {
+                        amount: yearlyPrice.priceAmount,
+                        polarId: yearlyPrice.id
+                    } : {}
+                }
+            };
+
+            // Generate a key from the product name (lowercase, remove spaces)
+            const key = product.name.toLowerCase().replace(/\s+/g, '-');
+
+            // Check if plan already exists
+            const existingPlan = await ctx.runQuery(internal.subscriptions.getPlanByKey, { key });
+
+            if (existingPlan) {
+                // Update existing plan
+                await ctx.runMutation(internal.subscriptions.updatePlan, {
+                    id: existingPlan._id,
+                    description: product.description || "",
+                    name: product.name,
+                    polarProductId: product.id,
+                    prices: prices as any
+                });
+            } else {
+                // Insert new plan
+                await ctx.runMutation(internal.subscriptions.createPlan, {
+                    description: product.description || "",
+                    key,
+                    name: product.name,
+                    polarProductId: product.id,
+                    prices: prices as any
+                });
+            }
         }
-        if (!user.email) {
-            throw new Error("User email not found");
-        }
-        const metadata = {
-            userId: user.tokenIdentifier,
-            userEmail: user.email,
-            tokenIdentifier: identity.subject,
-            plan: "free"
-        };
 
-        const checkout = await createCheckout({
-            customerEmail: user.email,
-            productPriceId: price.polarId,
-            metadata,
-            successUrl: `${process.env.FRONTEND_URL}/success`,
-        });
-
-        return checkout.url;
+        return { success: true, message: "Plans stored successfully" };
     },
 });
+
 
 export const getProOnboardingCheckoutUrl = action({
     args: {
@@ -118,16 +222,13 @@ export const getProOnboardingCheckoutUrl = action({
             throw new Error("User not found");
         }
 
-        const product = await ctx.runQuery(internal.subscriptions.getPlanByKey, {
-            key: "pro",
-        });
+        const product = await ctx.runQuery(internal.subscriptions.getPlans);
 
         const price =
             args.interval === "month"
                 ? product?.prices.month?.usd
                 : product?.prices.year?.usd;
 
-        console.log("Selected price:", JSON.stringify(price, null, 2));
 
         if (!price) {
             throw new Error("Price not found");
@@ -150,8 +251,6 @@ export const getProOnboardingCheckoutUrl = action({
             successUrl: `${process.env.FRONTEND_URL}/success`,
             metadata
         });
-
-        console.log("Checkout:", checkout);
 
         return checkout.url;
     },
@@ -373,12 +472,6 @@ export const subscriptionStoreWebhook = mutation({
 });
 
 export const paymentWebhook = httpAction(async (ctx, request) => {
-    console.log("Webhook received!", {
-        method: request.method,
-        url: request.url,
-        headers: Object.fromEntries(request.headers.entries())
-    });
-
     try {
         const body = await request.json();
 
