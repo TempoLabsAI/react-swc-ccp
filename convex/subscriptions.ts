@@ -4,6 +4,7 @@ import { api, internal } from "./_generated/api";
 import {
     action,
     httpAction,
+    internalAction,
     internalMutation,
     internalQuery,
     mutation,
@@ -44,13 +45,50 @@ const createCheckout = async ({
     return result;
 };
 
-export const getPlans = internalQuery({
-    args: {},
+export const getPlansPolar = internalAction({
+    args: {
+        organizationId: v.string(),
+    },
     handler: async (ctx, args) => {
-        const info = await ctx.db
-            .query("plans")
-            .first()
-        return info;
+        const polar = new Polar({
+            server: "sandbox",
+            accessToken: process.env.POLAR_ACCESS_TOKEN,
+        });
+
+        const { result } = await polar.products.list({
+            organizationId: args.organizationId
+        });
+
+        // Transform the data to remove Date objects and keep only needed fields
+        const cleanedItems = result.items.map(item => ({
+            id: item.id,
+            name: item.name,
+            description: item.description,
+            isRecurring: item.isRecurring,
+            prices: item.prices.map((price: any) => ({
+                id: price.id,
+                amount: price.priceAmount,
+                currency: price.priceCurrency,
+                interval: price.recurringInterval
+            }))
+        }));
+
+        return {
+            items: cleanedItems,
+            pagination: result.pagination
+        };
+    },
+});
+
+export const getPlans = action({
+    args: {
+        organizationId: v.string(),
+    },
+    handler: async (ctx, args) => {
+        const result = await ctx.runAction(internal.subscriptions.getPlansPolar, {
+            organizationId: args.organizationId
+        });
+        return result;
     },
 });
 
@@ -206,7 +244,7 @@ export const storePlans = action({
 
 export const getProOnboardingCheckoutUrl = action({
     args: {
-        interval: schema.tables.subscriptions.validator.fields.interval,
+        priceId: v.string(),
     },
     handler: async (ctx, args) => {
         const identity = await ctx.auth.getUserIdentity();
@@ -222,34 +260,13 @@ export const getProOnboardingCheckoutUrl = action({
             throw new Error("User not found");
         }
 
-        const product = await ctx.runQuery(internal.subscriptions.getPlans);
-
-        const price =
-            args.interval === "month"
-                ? product?.prices.month?.usd
-                : product?.prices.year?.usd;
-
-
-        if (!price) {
-            throw new Error("Price not found");
-        }
-        if (!user.email) {
-            throw new Error("User email not found");
-        }
-
-        const metadata = {
-            userId: user.tokenIdentifier,
-            userEmail: user.email,
-            interval: args.interval,
-            tokenIdentifier: identity.subject,
-            plan: "pro"
-        };
-
         const checkout = await createCheckout({
             customerEmail: user.email,
-            productPriceId: price.polarId,
+            productPriceId: args.priceId,
             successUrl: `${process.env.FRONTEND_URL}/success`,
-            metadata
+            metadata: {
+                userId: user.tokenIdentifier
+            }
         });
 
         return checkout.url;
