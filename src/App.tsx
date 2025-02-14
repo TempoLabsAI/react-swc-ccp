@@ -5,7 +5,7 @@ import Dashboard from "./pages/dashboard";
 import ProtectedRoute from "./components/wrappers/ProtectedRoute";
 import Success from "./pages/success";
 import Home from "./pages/home";
-
+import Form from "./pages/form";
 function App() {
   return (
     <Suspense fallback={<p>Loading...</p>}>
@@ -15,9 +15,15 @@ function App() {
           <Route
             path="/dashboard"
             element={
-              <ProtectedRoute>
-                <Dashboard />
-              </ProtectedRoute>
+              // <ProtectedRoute>
+              <Dashboard />
+              // </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/form"
+            element={
+              <Form />
             }
           />
           <Route

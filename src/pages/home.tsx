@@ -51,8 +51,9 @@ function App() {
         const plansData = await getPlansAction({
           organizationId: import.meta.env.VITE_POLAR_ORGANIZATION_ID
         });
-        setPlans(plansData);
+
         console.log("Plans:", plansData);
+        setPlans(plansData);
       } catch (error) {
         console.error("Error fetching plans:", error);
       }
@@ -74,74 +75,6 @@ function App() {
 
   return (
     <div className="min-h-screen flex flex-col bg-white">
-      <Navbar />
-      <main className="flex-grow">
-        <div className="container mx-auto px-4 py-16">
-          {/* Hero Section */}
-          <div className="flex flex-col items-center justify-center space-y-6 text-center mb-16">
-            <h1 className="text-6xl font-bold text-gray-900 mb-4">
-              Tempo React Starter
-            </h1>
-            <p className="text-xl text-gray-600 max-w-2xl mb-8">
-              Launch your next project faster with our modern tech stack: React + Vite, Clerk Auth, Convex BaaS, and Polar.sh payments.
-            </p>
-
-            {!isUserLoaded ?
-              <div className="flex gap-4">
-                <div className="px-8 py-3 w-[145px] h-[38px] rounded-lg bg-gray-200 animate-pulse"></div>
-              </div>
-              : <div className="flex gap-4">
-                <Unauthenticated>
-                  <SignInButton mode="modal">
-                    <button className="px-8 py-3 rounded-lg bg-indigo-600 text-white font-medium hover:bg-indigo-700 transition-colors duration-200">
-                      Get Started
-                    </button>
-                  </SignInButton>
-                </Unauthenticated>
-                <Authenticated>
-                  <Button
-                    className="text-sm font-medium"
-                    onClick={handleNavigation}
-                  >
-                    {subscriptionStatus?.hasActiveSubscription ? 'Go to Dashboard' : 'View Pricing'}
-                  </Button>
-                </Authenticated>
-              </div>}
-          </div>
-
-          {/* Features Grid */}
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8 mb-16">
-            {FEATURES.map(feature => (
-              <div key={feature.title} className="p-6 bg-gray-50 rounded-xl">
-                <div className="text-2xl mb-2">{feature.icon}</div>
-                <h3 className="text-lg font-semibold mb-2">{feature.title}</h3>
-                <p className="text-gray-600">{feature.description}</p>
-              </div>
-            ))}
-          </div>
-
-          {/* Pricing Section */}
-          <div id="pricing" className="py-16">
-            <div className="text-center mb-12">
-              <h2 className="text-4xl font-bold text-gray-900 mb-4">Simple, Transparent Pricing</h2>
-              <p className="text-xl text-gray-600">Choose the plan that's right for you</p>
-            </div>
-
-            <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-              {plans?.items?.map((product: any) => (
-                product.prices.map((price: any) => (
-                  <PricingCard 
-                    key={price.id} 
-                    price={price} 
-                    product={product} 
-                  />
-                ))
-              ))}
-            </div>
-          </div>
-        </div>
-      </main>
-      <Footer />
     </div>
   );
 }
