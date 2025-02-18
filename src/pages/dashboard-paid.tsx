@@ -4,7 +4,7 @@ import { api } from "../../convex/_generated/api";
 import { Footer } from "../components/footer";
 import { Navbar } from "../components/navbar";
 
-export default function Dashboard() {
+export default function DashboardPaid() {
     const { user } = useUser();
     const userData = useQuery(api.users.getUserByToken,
         user?.id ? { tokenIdentifier: user.id } : "skip"

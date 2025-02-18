@@ -102,13 +102,12 @@ function App() {
                 </Unauthenticated>
                 <Authenticated>
                   <Button>
-                    <Link to="/dashboard">Go to Dashboard</Link>
+                    <Link to="/dashboard">Go to Dashboard (Non paid)</Link>
                   </Button>
                   <Button
                     className="text-sm font-medium"
-                    onClick={handleNavigation}
                   >
-                    {subscriptionStatus?.hasActiveSubscription ? 'Go to Dashboard' : 'View Pricing'}
+                    <Link to="/dashboard-paid">Go to Dashboard (Paid)</Link>
                   </Button>
                 </Authenticated>
               </div>}

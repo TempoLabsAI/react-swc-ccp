@@ -2,10 +2,13 @@ import { Suspense } from "react";
 import { Route, Routes, useRoutes } from "react-router-dom";
 import routes from "tempo-routes";
 import Dashboard from "./pages/dashboard";
-import ProtectedRoute from "./components/wrappers/ProtectedRoute";
-import Success from "./pages/success";
-import Home from "./pages/home";
+import DashboardPaid from "./pages/dashboard-paid";
 import Form from "./pages/form";
+import Home from "./pages/home";
+import NotSubscribed from "./pages/not-subscribed";
+import Success from "./pages/success";
+import ProtectedRoute from "./components/wrappers/ProtectedRoute";
+
 function App() {
   return (
     <Suspense fallback={<p>Loading...</p>}>
@@ -15,9 +18,15 @@ function App() {
           <Route
             path="/dashboard"
             element={
-              // <ProtectedRoute>
               <Dashboard />
-              // </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/dashboard-paid"
+            element={
+              <ProtectedRoute>
+                <DashboardPaid />
+              </ProtectedRoute>
             }
           />
           <Route
@@ -30,6 +39,12 @@ function App() {
             path="/success"
             element={
               <Success />
+            }
+          />
+          <Route
+            path="/not-subscribed"
+            element={
+              <NotSubscribed />
             }
           />
         </Routes>

@@ -61,7 +61,7 @@ export default function ProtectedRoute({ children }: ProtectedRouteProps) {
 
   // Step 6: Check subscription status
   if (!subscriptionStatus?.hasActiveSubscription) {
-    return <Navigate to="/" replace />;
+    return <Navigate to="/not-subscribed" replace />;
   }
 
   // All checks passed, render protected content
