@@ -5,15 +5,13 @@ import { useEffect, useState } from "react";
 import { Navbar } from "@/components/navbar";
 
 export default function NotSubscribed() {
-    const getPlansAction = useAction(api.subscriptions.getPlans);
+    const getPlansAction = useAction(api.subscriptions.getPlansPolar);
     const [plans, setPlans] = useState<any>(null);
 
     useEffect(() => {
         const fetchPlans = async () => {
             try {
-                const plansData = await getPlansAction({
-                    organizationId: import.meta.env.VITE_POLAR_ORGANIZATION_ID
-                });
+                const plansData = await getPlansAction();
 
                 console.log("Plans:", plansData);
                 setPlans(plansData);

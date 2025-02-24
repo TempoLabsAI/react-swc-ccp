@@ -45,18 +45,15 @@ const createCheckout = async ({
     return result;
 };
 
-export const getPlansPolar = internalAction({
-    args: {
-        organizationId: v.string(),
-    },
-    handler: async (ctx, args) => {
+export const getPlansPolar = action({
+    handler: async (ctx) => {
         const polar = new Polar({
             server: "sandbox",
             accessToken: process.env.POLAR_ACCESS_TOKEN,
         });
 
         const { result } = await polar.products.list({
-            organizationId: args.organizationId
+            organizationId: process.env.POLAR_ORGANIZATION_ID
         });
 
         // Transform the data to remove Date objects and keep only needed fields
@@ -77,18 +74,6 @@ export const getPlansPolar = internalAction({
             items: cleanedItems,
             pagination: result.pagination
         };
-    },
-});
-
-export const getPlans = action({
-    args: {
-        organizationId: v.string(),
-    },
-    handler: async (ctx, args) => {
-        const result = await ctx.runAction(internal.subscriptions.getPlansPolar, {
-            organizationId: args.organizationId
-        });
-        return result;
     },
 });
 

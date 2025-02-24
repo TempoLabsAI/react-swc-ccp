@@ -34,7 +34,7 @@ const FEATURES = [
 function App() {
   const { user, isLoaded: isUserLoaded } = useUser();
   const storeUser = useMutation(api.users.store);
-  const getPlansAction = useAction(api.subscriptions.getPlans);
+  const getPlansAction = useAction(api.subscriptions.getPlansPolar);
   const subscriptionStatus = useQuery(api.subscriptions.getUserSubscriptionStatus);
   const [plans, setPlans] = useState<any>(null);
   const navigate = useNavigate();
@@ -48,9 +48,7 @@ function App() {
   useEffect(() => {
     const fetchPlans = async () => {
       try {
-        const plansData = await getPlansAction({
-          organizationId: import.meta.env.VITE_POLAR_ORGANIZATION_ID
-        });
+        const plansData = await getPlansAction();
 
         console.log("Plans:", plansData);
         setPlans(plansData);
