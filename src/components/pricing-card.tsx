@@ -82,7 +82,7 @@ export function PricingCard({ price, product }: PricingCardProps) {
           </Authenticated>
         )}
         <Unauthenticated>
-          <SignInButton mode="modal">
+          <SignInButton mode="modal" signUpFallbackRedirectUrl="/">
             <Button className="w-full mt-8 bg-indigo-600 hover:bg-indigo-700 text-white py-3 rounded-lg transition-colors duration-200">
               Get Started {isYearly ? 'Yearly' : 'Monthly'}
             </Button>

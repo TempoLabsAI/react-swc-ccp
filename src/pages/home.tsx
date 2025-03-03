@@ -92,7 +92,7 @@ function App() {
               :
               <div className="flex justify-center items-center gap-4">
                 <Unauthenticated>
-                  <SignInButton mode="modal">
+                  <SignInButton mode="modal" signUpFallbackRedirectUrl="/">
                     <Button className="px-8 py-3 rounded-lg bg-indigo-600 text-white font-medium hover:bg-indigo-700 transition-colors duration-200">
                       Get Started
                     </Button>

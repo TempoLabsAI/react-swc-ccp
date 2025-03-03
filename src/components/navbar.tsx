@@ -30,7 +30,7 @@ export function Navbar() {
               </div>
             </Authenticated>
             <Unauthenticated>
-              <SignInButton mode="modal">
+              <SignInButton mode="modal" signUpFallbackRedirectUrl="/">
                 <button className="px-4 py-2 rounded-lg bg-indigo-600 text-white font-medium hover:bg-indigo-700 transition-colors duration-200">
                   Sign In
                 </button>
