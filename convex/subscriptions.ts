@@ -10,6 +10,11 @@ import {
     mutation,
     query
 } from "./_generated/server";
+import {
+  Webhook,
+  WebhookVerificationError
+} from "standardwebhooks";
+
 import schema from "./schema";
 
 const createCheckout = async ({
@@ -35,7 +40,7 @@ const createCheckout = async ({
 
     console.log("Initialized Polar SDK with token:", process.env.POLAR_ACCESS_TOKEN?.substring(0, 8) + "...");
 
-    const result = await polar.checkouts.custom.create({
+    const result = await polar.checkouts.create({
         productPriceId,
         successUrl,
         customerEmail,
@@ -473,9 +478,40 @@ export const subscriptionStoreWebhook = mutation({
     },
 });
 
+
+// Use our own validation similar to validateEvent from @polar-sh/sdk/webhooks
+// The only diffference is we use btoa to encode the secret since Convex js runtime doesn't support Buffer
+const validateEvent = (
+  body: string | Buffer,
+  headers: Record<string, string>,
+  secret: string,
+) => {
+  const base64Secret = btoa(secret);
+  const webhook = new Webhook(base64Secret);
+  webhook.verify(body, headers);
+};
+
+
 export const paymentWebhook = httpAction(async (ctx, request) => {
     try {
-        const body = await request.json();
+        const rawBody = await request.text();
+
+        // Internally validateEvent uses headers as a dictionary e.g. headers["webhook-id"]
+        // So we need to convert the headers to a dictionary 
+        // (request.headers is a Headers object which is accessed as request.headers.get("webhook-id"))
+        const headers: Record<string, string> = {};
+        request.headers.forEach((value, key) => {
+          headers[key] = value;
+        });
+
+        // Validate the webhook event
+        validateEvent(
+            rawBody,
+            headers,
+            process.env.POLAR_WEBHOOK_SECRET ?? '',
+        )
+
+        const body = JSON.parse(rawBody);
 
         // track events and based on events store data
         await ctx.runMutation(api.subscriptions.subscriptionStoreWebhook, {
@@ -491,7 +527,23 @@ export const paymentWebhook = httpAction(async (ctx, request) => {
         });
 
     } catch (error) {
-        console.log("No JSON body or parsing failed");
+        if (error instanceof WebhookVerificationError) {
+            console.log("Webhook verification failed", error);
+            return new Response(JSON.stringify({ message: "Webhook verification failed" }), {
+                status: 403,
+                headers: {
+                    "Content-Type": "application/json"
+                }
+            });
+        }
+
+        console.log("Webhook failed", error);
+        return new Response(JSON.stringify({ message: "Webhook failed" }), {
+            status: 400,
+            headers: {
+                "Content-Type": "application/json"
+            }
+        });
     }
 
 });
