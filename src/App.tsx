@@ -3,7 +3,6 @@ import { Route, Routes, useRoutes } from "react-router-dom";
 import routes from "tempo-routes";
 import Dashboard from "./pages/dashboard";
 import DashboardPaid from "./pages/dashboard-paid";
-import Form from "./pages/form";
 import Home from "./pages/home";
 import NotSubscribed from "./pages/not-subscribed";
 import Success from "./pages/success";
@@ -27,12 +26,6 @@ function App() {
               <ProtectedRoute>
                 <DashboardPaid />
               </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/form"
-            element={
-              <Form />
             }
           />
           <Route
