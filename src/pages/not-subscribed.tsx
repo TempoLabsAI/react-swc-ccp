@@ -52,7 +52,6 @@ export default function NotSubscribed() {
                             product.prices.map((price) => (
                                 <PricingCard
                                     key={`${product.id}-${price.id}`}
-                                    product={product}
                                     price={price}
                                 />
                             ))
