@@ -1,17 +1,16 @@
+import { Button } from "@/components/ui/button";
+import { Price } from "@/types/plans";
 import { SignInButton, useUser } from "@clerk/clerk-react";
 import { Authenticated, Unauthenticated, useAction } from "convex/react";
-import { useCallback } from "react";
-import { Button } from "@/components/ui/button";
-import { api } from "../../convex/_generated/api";
-import { Price, Product } from "@/types/plans";
 import { CheckCircle } from "lucide-react";
+import { useCallback } from "react";
+import { api } from "../../convex/_generated/api";
 
 interface PricingCardProps {
   price: Price;
-  product: Product;
 }
 
-export function PricingCard({ price, product }: PricingCardProps) {
+export function PricingCard({ price }: PricingCardProps) {
   const { isLoaded } = useUser();
   const getProCheckoutUrl = useAction(api.subscriptions.getProOnboardingCheckoutUrl);
 
@@ -27,49 +26,60 @@ export function PricingCard({ price, product }: PricingCardProps) {
   const isYearly = price.interval === 'year';
 
   return (
-    <div className={`relative bg-white border ${
-      isYearly ? 'border-2 border-indigo-600' : 'border-gray-200'
-    } rounded-2xl shadow-sm hover:shadow-lg transition-shadow duration-300`}>
+    <div className="group relative rounded-[32px] bg-white p-8 transition-all hover:scale-[1.02] hover:shadow-lg">
+      {/* Background gradient effect */}
+      <div className="absolute inset-0 bg-gradient-to-br from-white to-neutral-50 rounded-[32px] -z-10" />
+
       {isYearly && (
-        <div className="absolute -top-4 right-8">
-          <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold bg-green-100 text-green-800">
+        <div className="inline-flex items-center gap-2 rounded-[20px] bg-[#0066CC]/10 px-4 py-2 mb-6">
+          <span className="text-sm font-medium text-[#0066CC]">
             Save 17%
           </span>
         </div>
       )}
-      <div className="p-8">
-        <h3 className="text-xl font-semibold text-gray-900 mb-2">
-          {isYearly ? 'Yearly' : 'Monthly'}
-        </h3>
-        <div className="flex items-baseline mb-4">
-          <span className="text-5xl font-bold tracking-tight text-gray-900">
-            ${(price.amount / 100).toFixed(2)}
-          </span>
-          <span className="text-lg text-gray-600 ml-1">/{price.interval}</span>
+
+      <div className="space-y-6">
+        <div>
+          <h3 className="text-2xl font-semibold text-[#1D1D1F] mb-2">
+            {isYearly ? 'Yearly' : 'Monthly'}
+          </h3>
+          <div className="flex items-baseline gap-1">
+            <span className="text-4xl font-medium text-[#1D1D1F]">
+              ${(price.amount / 100).toFixed(2)}
+            </span>
+            <span className="text-lg text-[#86868B]">/{price.interval}</span>
+          </div>
         </div>
-        <p className="text-gray-600 mb-6">
+
+        <p className="text-base text-[#86868B] leading-relaxed">
           {isYearly ? 'Best value for long-term commitment' : 'Perfect for getting started with our platform'}
         </p>
 
-        <ul className="space-y-4 text-gray-600">
-          <li className="flex items-center">
-            <CheckCircle className="w-5 h-5 text-indigo-600 mr-2" />
-            {price.interval === 'month' ? 'Full access to all features' : 'Everything in monthly'}
+        <ul className="space-y-4">
+          <li className="flex items-center gap-3">
+            <CheckCircle className="w-5 h-5 text-[#0066CC]" />
+            <span className="text-base text-[#1D1D1F]">
+              {price.interval === 'month' ? 'Full access to all features' : 'Everything in monthly'}
+            </span>
           </li>
-          <li className="flex items-center">
-            <CheckCircle className="w-5 h-5 text-indigo-600 mr-2" />
-            {price.interval === 'month' ? 'Priority support' : '2 months free'}
+          <li className="flex items-center gap-3">
+            <CheckCircle className="w-5 h-5 text-[#0066CC]" />
+            <span className="text-base text-[#1D1D1F]">
+              {price.interval === 'month' ? 'Priority support' : '2 months free'}
+            </span>
           </li>
-          <li className="flex items-center">
-            <CheckCircle className="w-5 h-5 text-indigo-600 mr-2" />
-            {price.interval === 'month' ? 'Regular updates' : 'Early access to new features'}
+          <li className="flex items-center gap-3">
+            <CheckCircle className="w-5 h-5 text-[#0066CC]" />
+            <span className="text-base text-[#1D1D1F]">
+              {price.interval === 'month' ? 'Regular updates' : 'Early access to new features'}
+            </span>
           </li>
         </ul>
 
         {isLoaded && (
           <Authenticated>
             <Button
-              className="w-full mt-8 bg-indigo-600 hover:bg-indigo-700 text-white py-3 rounded-lg transition-colors duration-200"
+              className="w-full h-12 text-base rounded-[14px] bg-[#0066CC] hover:bg-[#0077ED] text-white shadow-sm transition-all"
               onClick={handleCheckout}
             >
               Get Started {isYearly ? 'Yearly' : 'Monthly'}
@@ -78,7 +88,7 @@ export function PricingCard({ price, product }: PricingCardProps) {
         )}
         <Unauthenticated>
           <SignInButton mode="modal" signUpFallbackRedirectUrl="/">
-            <Button className="w-full mt-8 bg-indigo-600 hover:bg-indigo-700 text-white py-3 rounded-lg transition-colors duration-200">
+            <Button className="w-full h-12 text-base rounded-[14px] bg-[#0066CC] hover:bg-[#0077ED] text-white shadow-sm transition-all">
               Get Started {isYearly ? 'Yearly' : 'Monthly'}
             </Button>
           </SignInButton>
@@ -86,4 +96,4 @@ export function PricingCard({ price, product }: PricingCardProps) {
       </div>
     </div>
   );
-} 
+}

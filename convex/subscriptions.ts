@@ -1,21 +1,17 @@
 import { Polar } from "@polar-sh/sdk";
 import { v } from "convex/values";
-import { api, internal } from "./_generated/api";
+import {
+    Webhook,
+    WebhookVerificationError
+} from "standardwebhooks";
+import { api } from "./_generated/api";
 import {
     action,
     httpAction,
-    internalAction,
-    internalMutation,
-    internalQuery,
     mutation,
     query
 } from "./_generated/server";
-import {
-  Webhook,
-  WebhookVerificationError
-} from "standardwebhooks";
 
-import schema from "./schema";
 
 const createCheckout = async ({
     customerEmail,
@@ -79,155 +75,6 @@ export const getPlansPolar = action({
             items: cleanedItems,
             pagination: result.pagination
         };
-    },
-});
-
-export const getPlanByKey = internalQuery({
-    args: {
-        key: schema.tables.plans.validator.fields.key,
-    },
-    handler: async (ctx, args) => {
-        return await ctx.db
-            .query("plans")
-            .withIndex("key", (q) => q.eq("key", args.key))
-            .unique();
-    },
-});
-
-// Add these new mutations to handle plan creation and updates
-export const createPlan = internalMutation({
-    args: {
-        description: v.string(),
-        key: v.string(),
-        name: v.string(),
-        polarProductId: v.string(),
-        prices: v.object({
-            month: v.object({
-                usd: v.optional(v.union(
-                    v.object({
-                        amount: v.number(),
-                        polarId: v.string()
-                    }),
-                    v.null()
-                ))
-            }),
-            year: v.object({
-                usd: v.optional(v.union(
-                    v.object({
-                        amount: v.number(),
-                        polarId: v.string()
-                    }),
-                    v.null()
-                ))
-            })
-        })
-    },
-    handler: async (ctx, args) => {
-        return await ctx.db.insert("plans", args);
-    },
-});
-
-export const updatePlan = internalMutation({
-    args: {
-        id: v.id("plans"),
-        description: v.string(),
-        name: v.string(),
-        polarProductId: v.string(),
-        prices: v.object({
-            month: v.object({
-                usd: v.optional(v.union(
-                    v.object({
-                        amount: v.number(),
-                        polarId: v.string()
-                    }),
-                    v.null()
-                ))
-            }),
-            year: v.object({
-                usd: v.optional(v.union(
-                    v.object({
-                        amount: v.number(),
-                        polarId: v.string()
-                    }),
-                    v.null()
-                ))
-            })
-        })
-    },
-    handler: async (ctx, args) => {
-        const { id, ...updates } = args;
-        return await ctx.db.patch(id, updates);
-    },
-});
-
-export const storePlans = action({
-    args: {},
-    handler: async (ctx, args) => {
-        const identity = await ctx.auth.getUserIdentity();
-        if (!identity) {
-            throw new Error("Not authenticated");
-        }
-
-        const polar = new Polar({
-            server: "sandbox",
-            accessToken: process.env.POLAR_ACCESS_TOKEN,
-        });
-
-        const { result } = await polar.products.list({
-            organizationId: process.env.POLAR_ORGANIZATION_ID
-        });
-
-        // console.log("Products:", result);
-        // Process each product and store in plans table
-        for (const product of result.items) {
-            // Find the prices once to avoid multiple lookups
-            const monthlyPrice: any = product.prices.find((p: any) => p.recurringInterval === 'month' && p.priceCurrency === 'usd');
-            const yearlyPrice: any = product.prices.find((p: any) => p.recurringInterval === 'year' && p.priceCurrency === 'usd');
-
-            // Build the prices object with empty objects as defaults
-            const prices = {
-                month: {
-                    usd: monthlyPrice ? {
-                        amount: monthlyPrice.priceAmount,
-                        polarId: monthlyPrice.id
-                    } : {}
-                },
-                year: {
-                    usd: yearlyPrice ? {
-                        amount: yearlyPrice.priceAmount,
-                        polarId: yearlyPrice.id
-                    } : {}
-                }
-            };
-
-            // Generate a key from the product name (lowercase, remove spaces)
-            const key = product.name.toLowerCase().replace(/\s+/g, '-');
-
-            // Check if plan already exists
-            const existingPlan = await ctx.runQuery(internal.subscriptions.getPlanByKey, { key });
-
-            if (existingPlan) {
-                // Update existing plan
-                await ctx.runMutation(internal.subscriptions.updatePlan, {
-                    id: existingPlan._id,
-                    description: product.description || "",
-                    name: product.name,
-                    polarProductId: product.id,
-                    prices: prices as any
-                });
-            } else {
-                // Insert new plan
-                await ctx.runMutation(internal.subscriptions.createPlan, {
-                    description: product.description || "",
-                    key,
-                    name: product.name,
-                    polarProductId: product.id,
-                    prices: prices as any
-                });
-            }
-        }
-
-        return { success: true, message: "Plans stored successfully" };
     },
 });
 
@@ -518,7 +365,6 @@ export const paymentWebhook = httpAction(async (ctx, request) => {
             body
         });
 
-        console.log("Webhook body:", body);
         return new Response(JSON.stringify({ message: "Webhook received!" }), {
             status: 200,
             headers: {
@@ -528,7 +374,6 @@ export const paymentWebhook = httpAction(async (ctx, request) => {
 
     } catch (error) {
         if (error instanceof WebhookVerificationError) {
-            console.log("Webhook verification failed", error);
             return new Response(JSON.stringify({ message: "Webhook verification failed" }), {
                 status: 403,
                 headers: {

@@ -26,27 +26,32 @@ export default function DashboardPaid() {
     };
 
     return (
-        <div className="min-h-screen flex flex-col bg-gray-50">
+        <div className="min-h-screen flex flex-col bg-[#FBFBFD]">
             <Navbar />
             <main className="flex-grow">
-                <div className="container mx-auto px-4 py-8">
-                    <div className="mb-8">
-                        <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
-                        <p className="text-gray-600 mt-2">View and manage your account information</p>
-                        <div className="mt-[1rem]">
-                            <button
-                                onClick={handleManageSubscription}
-                                className="bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors"
-                            >
-                                Manage Subscription
-                            </button>
-                        </div>
+                <div className="container mx-auto px-4 pb-24 pt-12">
+                    {/* Header Section */}
+                    <div className="relative flex flex-col items-center text-center space-y-6 pb-16">
+                        <div className="absolute inset-x-0 -top-24 -bottom-24 bg-gradient-to-b from-[#FBFBFD] via-white to-[#FBFBFD] opacity-80 blur-3xl -z-10" />
+                        <h1 className="text-4xl font-semibold text-[#1D1D1F] tracking-tight">
+                            Premium Dashboard
+                        </h1>
+                        <p className="text-xl text-[#86868B] max-w-[600px] leading-relaxed">
+                            Manage your premium account details and subscription preferences.
+                        </p>
+                        <button
+                            onClick={handleManageSubscription}
+                            className="h-12 px-8 text-base rounded-[14px] bg-[#0066CC] hover:bg-[#0077ED] text-white shadow-sm transition-all mt-4"
+                        >
+                            Manage Subscription
+                        </button>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {/* User Information Grid */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-16">
                         {/* Clerk User Data */}
-                        <DataCard title="Clerk User Information">
-                            <div className="space-y-2">
+                        <DataCard title="Personal Information">
+                            <div className="space-y-3">
                                 <DataRow label="Full Name" value={user?.fullName} />
                                 <DataRow label="Email" value={user?.primaryEmailAddress?.emailAddress} />
                                 <DataRow label="User ID" value={user?.id} />
@@ -59,8 +64,8 @@ export default function DashboardPaid() {
                         </DataCard>
 
                         {/* Database User Data */}
-                        <DataCard title="Database User Information">
-                            <div className="space-y-2">
+                        <DataCard title="Account Details">
+                            <div className="space-y-3">
                                 <DataRow label="Database ID" value={userData?._id} />
                                 <DataRow label="Name" value={userData?.name} />
                                 <DataRow label="Email" value={userData?.email} />
@@ -73,16 +78,16 @@ export default function DashboardPaid() {
                         </DataCard>
 
                         {/* Session Information */}
-                        <DataCard title="Current Session">
-                            <div className="space-y-2">
+                        <DataCard title="Security & Privacy">
+                            <div className="space-y-3">
                                 <DataRow label="Last Active" value={new Date(user?.lastSignInAt || "").toLocaleString()} />
                                 <DataRow label="Auth Strategy" value={user?.primaryEmailAddress?.verification.strategy} />
                             </div>
                         </DataCard>
 
                         {/* Additional User Details */}
-                        <DataCard title="Profile Details">
-                            <div className="space-y-2">
+                        <DataCard title="Profile Information">
+                            <div className="space-y-3">
                                 <DataRow label="Username" value={user?.username} />
                                 <DataRow label="First Name" value={user?.firstName} />
                                 <DataRow label="Last Name" value={user?.lastName} />
@@ -94,57 +99,57 @@ export default function DashboardPaid() {
                         </DataCard>
                     </div>
 
-                    {/* Subscription Data Grid */}
-                    <div className="mt-8">
-                        <DataCard title="Subscription Information">
+                    {/* Subscription Data Section */}
+                    <div className="mb-16">
+                        <DataCard title="Subscription Details">
                             <div className="overflow-x-auto">
-                                <table className="min-w-full divide-y divide-gray-200">
-                                    <thead className="bg-gray-50">
+                                <table className="min-w-full divide-y divide-[#F5F5F7]">
+                                    <thead>
                                         <tr>
-                                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Field</th>
-                                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Value</th>
+                                            <th scope="col" className="px-6 py-4 text-left text-sm font-medium text-[#86868B]">Field</th>
+                                            <th scope="col" className="px-6 py-4 text-left text-sm font-medium text-[#86868B]">Value</th>
                                         </tr>
                                     </thead>
-                                    <tbody className="bg-white divide-y divide-gray-200">
+                                    <tbody className="divide-y divide-[#F5F5F7]">
                                         <tr>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">Status</td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                            <td className="px-6 py-4 text-sm font-medium text-[#1D1D1F]">Status</td>
+                                            <td className="px-6 py-4">
                                                 <StatusBadge status={subscription?.status} />
                                             </td>
                                         </tr>
                                         <tr>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">Plan Amount</td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                            <td className="px-6 py-4 text-sm font-medium text-[#1D1D1F]">Plan Amount</td>
+                                            <td className="px-6 py-4 text-sm text-[#1D1D1F]">
                                                 {formatCurrency(subscription?.amount, subscription?.currency)}
                                             </td>
                                         </tr>
                                         <tr>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">Billing Interval</td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{subscription?.interval || "—"}</td>
+                                            <td className="px-6 py-4 text-sm font-medium text-[#1D1D1F]">Billing Interval</td>
+                                            <td className="px-6 py-4 text-sm text-[#1D1D1F]">{subscription?.interval || "—"}</td>
                                         </tr>
                                         <tr>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">Current Period</td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                            <td className="px-6 py-4 text-sm font-medium text-[#1D1D1F]">Current Period</td>
+                                            <td className="px-6 py-4 text-sm text-[#1D1D1F]">
                                                 {formatDate(subscription?.currentPeriodStart)} - {formatDate(subscription?.currentPeriodEnd)}
                                             </td>
                                         </tr>
                                         <tr>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">Started At</td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{formatDate(subscription?.startedAt)}</td>
+                                            <td className="px-6 py-4 text-sm font-medium text-[#1D1D1F]">Started At</td>
+                                            <td className="px-6 py-4 text-sm text-[#1D1D1F]">{formatDate(subscription?.startedAt)}</td>
                                         </tr>
                                         {subscription?.canceledAt && (
                                             <>
                                                 <tr>
-                                                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">Canceled At</td>
-                                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{formatDate(subscription?.canceledAt)}</td>
+                                                    <td className="px-6 py-4 text-sm font-medium text-[#1D1D1F]">Canceled At</td>
+                                                    <td className="px-6 py-4 text-sm text-[#1D1D1F]">{formatDate(subscription?.canceledAt)}</td>
                                                 </tr>
                                                 <tr>
-                                                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">Cancellation Reason</td>
-                                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{subscription?.customerCancellationReason || "—"}</td>
+                                                    <td className="px-6 py-4 text-sm font-medium text-[#1D1D1F]">Cancellation Reason</td>
+                                                    <td className="px-6 py-4 text-sm text-[#1D1D1F]">{subscription?.customerCancellationReason || "—"}</td>
                                                 </tr>
                                                 <tr>
-                                                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">Cancellation Comment</td>
-                                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{subscription?.customerCancellationComment || "—"}</td>
+                                                    <td className="px-6 py-4 text-sm font-medium text-[#1D1D1F]">Cancellation Comment</td>
+                                                    <td className="px-6 py-4 text-sm text-[#1D1D1F]">{subscription?.customerCancellationComment || "—"}</td>
                                                 </tr>
                                             </>
                                         )}
@@ -155,24 +160,24 @@ export default function DashboardPaid() {
                     </div>
 
                     {/* JSON Data Preview */}
-                    <div className="mt-8">
-                        <DataCard title="Raw Data Preview">
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div>
+                        <DataCard title="Technical Details">
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                                 <div>
-                                    <h3 className="text-sm font-medium text-gray-900 mb-2">Clerk User Data</h3>
-                                    <pre className="bg-gray-50 p-4 rounded-lg text-sm overflow-auto max-h-64">
+                                    <h3 className="text-sm font-medium text-[#1D1D1F] mb-3">Clerk User Data</h3>
+                                    <pre className="bg-[#F5F5F7] p-4 rounded-2xl text-sm overflow-auto max-h-64 text-[#1D1D1F]">
                                         {JSON.stringify(user, null, 2)}
                                     </pre>
                                 </div>
                                 <div>
-                                    <h3 className="text-sm font-medium text-gray-900 mb-2">Database User Data</h3>
-                                    <pre className="bg-gray-50 p-4 rounded-lg text-sm overflow-auto max-h-64">
+                                    <h3 className="text-sm font-medium text-[#1D1D1F] mb-3">Database User Data</h3>
+                                    <pre className="bg-[#F5F5F7] p-4 rounded-2xl text-sm overflow-auto max-h-64 text-[#1D1D1F]">
                                         {JSON.stringify(userData, null, 2)}
                                     </pre>
                                 </div>
                                 <div>
-                                    <h3 className="text-sm font-medium text-gray-900 mb-2">Subscription Data</h3>
-                                    <pre className="bg-gray-50 p-4 rounded-lg text-sm overflow-auto max-h-64">
+                                    <h3 className="text-sm font-medium text-[#1D1D1F] mb-3">Subscription Data</h3>
+                                    <pre className="bg-[#F5F5F7] p-4 rounded-2xl text-sm overflow-auto max-h-64 text-[#1D1D1F]">
                                         {JSON.stringify(subscription, null, 2)}
                                     </pre>
                                 </div>
@@ -188,8 +193,8 @@ export default function DashboardPaid() {
 
 function DataCard({ title, children }: { title: string; children: React.ReactNode }) {
     return (
-        <div className="bg-white rounded-xl shadow-sm p-6">
-            <h2 className="text-lg font-semibold mb-4 text-gray-900">{title}</h2>
+        <div className="bg-white rounded-[20px] shadow-sm p-8 transition-all hover:shadow-lg">
+            <h2 className="text-xl font-semibold mb-6 text-[#1D1D1F]">{title}</h2>
             {children}
         </div>
     );
@@ -197,9 +202,9 @@ function DataCard({ title, children }: { title: string; children: React.ReactNod
 
 function DataRow({ label, value }: { label: string; value: string | number | null | undefined }) {
     return (
-        <div className="flex justify-between py-2 border-b border-gray-100 last:border-0">
-            <span className="text-gray-600">{label}</span>
-            <span className="text-gray-900 font-medium">{value || "—"}</span>
+        <div className="flex justify-between py-3 border-b border-[#F5F5F7] last:border-0">
+            <span className="text-[#86868B]">{label}</span>
+            <span className="text-[#1D1D1F] font-medium">{value || "—"}</span>
         </div>
     );
 }
@@ -221,16 +226,16 @@ function StatusBadge({ status }: { status: string | undefined }) {
     const getStatusColor = (status: string | undefined) => {
         switch (status) {
             case "active":
-                return "bg-green-100 text-green-800";
+                return "bg-[#E3F3E3] text-[#1D7D1D]";
             case "canceled":
-                return "bg-red-100 text-red-800";
+                return "bg-[#FFE5E5] text-[#D92D20]";
             default:
-                return "bg-gray-100 text-gray-800";
+                return "bg-[#F5F5F7] text-[#86868B]";
         }
     };
 
     return (
-        <span className={`px-2 py-1 rounded-full text-sm ${getStatusColor(status)}`}>
+        <span className={`px-3 py-1.5 rounded-full text-sm font-medium ${getStatusColor(status)}`}>
             {status || "No status"}
         </span>
     );
